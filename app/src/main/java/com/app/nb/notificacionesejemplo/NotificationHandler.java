@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Icon;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -79,7 +80,8 @@ public class NotificationHandler extends ContextWrapper {
                     .setContentTitle(title)
                     .setColor(getResources().getColor(R.color.colorPrimary))
                     .setContentText(message)
-                    .setContentIntent(createAndGetPendingIntent(title, message))
+                    .setContentIntent(getPendingIntent(title, message))
+                    .addAction(getNotificationAction(title, message))
                     .setSmallIcon(android.R.drawable.stat_notify_chat)
                     .setAutoCancel(true);
         }
@@ -92,17 +94,28 @@ public class NotificationHandler extends ContextWrapper {
                 .setContentText(message)
                 .setSmallIcon(android.R.drawable.stat_notify_chat)
                 .setAutoCancel(true)
-                .setContentIntent(createAndGetPendingIntent(title, message))
+                .setContentIntent(getPendingIntent(title, message))
+                .addAction(getNotificationAction(title, message))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setDefaults(Notification.DEFAULT_ALL);
     }
 
-    private PendingIntent createAndGetPendingIntent(String title, String message) {
+    private PendingIntent getPendingIntent(String title, String message) {
         Intent intent = new Intent(this, DetailsActivity.class);
         intent.putExtra("title", title);
         intent.putExtra("message", message);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         return pendingIntent;
+    }
+
+    private Notification.Action getNotificationAction(String title, String message) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            Notification.Action action = new Notification.Action.Builder(Icon.createWithResource(this, android.R.drawable.ic_menu_send),
+                    "Ver Detalles",
+                    getPendingIntent(title, message)).build();
+            return action;
+        }
+        return null;
     }
 }

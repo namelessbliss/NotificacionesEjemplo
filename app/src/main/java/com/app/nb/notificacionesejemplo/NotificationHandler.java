@@ -3,8 +3,10 @@ package com.app.nb.notificacionesejemplo;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.Intent;
 import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -72,10 +74,12 @@ public class NotificationHandler extends ContextWrapper {
 
     private Notification.Builder createNotificationWithChannel(String title, String message, String channelId) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
             return new Notification.Builder(getApplicationContext(), channelId)
                     .setContentTitle(title)
                     .setColor(getResources().getColor(R.color.colorPrimary))
                     .setContentText(message)
+                    .setContentIntent(createAndGetPendingIntent(title, message))
                     .setSmallIcon(android.R.drawable.stat_notify_chat)
                     .setAutoCancel(true);
         }
@@ -88,7 +92,17 @@ public class NotificationHandler extends ContextWrapper {
                 .setContentText(message)
                 .setSmallIcon(android.R.drawable.stat_notify_chat)
                 .setAutoCancel(true)
+                .setContentIntent(createAndGetPendingIntent(title, message))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setDefaults(Notification.DEFAULT_ALL);
+    }
+
+    private PendingIntent createAndGetPendingIntent(String title, String message) {
+        Intent intent = new Intent(this, DetailsActivity.class);
+        intent.putExtra("title", title);
+        intent.putExtra("message", message);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        return pendingIntent;
     }
 }

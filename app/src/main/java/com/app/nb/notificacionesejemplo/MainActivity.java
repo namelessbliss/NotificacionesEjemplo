@@ -31,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
 
     private NotificationHandler notificationHandler;
 
+    private int counter = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (!TextUtils.isEmpty(title) && !TextUtils.isEmpty(message)) {
             Notification.Builder builder = notificationHandler.createNotification(title, message, isHighImportance);
-            notificationHandler.getManager().notify(1, builder.build());
+            notificationHandler.getManager().notify(++counter, builder.build());
         }
     }
 

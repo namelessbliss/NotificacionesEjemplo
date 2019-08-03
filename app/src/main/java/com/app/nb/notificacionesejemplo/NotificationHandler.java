@@ -24,6 +24,9 @@ public class NotificationHandler extends ContextWrapper {
     public static final String CHANNEL_LOW_ID = "2";
     private static final String CHANNEL_LOW_NAME = "LOW CHANNEL";
 
+    private final int SUMARY_GROUP_ID = 100; //valor cualquiera
+    private final String SUMARY_GROUP_NAME = "NOTIFICATION GROUP";
+
     public NotificationHandler(Context base) {
         super(base);
         createChannel();
@@ -70,7 +73,10 @@ public class NotificationHandler extends ContextWrapper {
             }
             return createNotificationWithChannel(title, message, CHANNEL_LOW_ID);
         }
-        return createNotificationWithoutChannel(title, message);
+        if (isHighImportance)
+            return createNotificationWithoutChannel(title, message, NotificationCompat.PRIORITY_HIGH);
+        else
+            return createNotificationWithoutChannel(title, message, NotificationCompat.PRIORITY_LOW);
     }
 
     private Notification.Builder createNotificationWithChannel(String title, String message, String channelId) {
@@ -82,13 +88,14 @@ public class NotificationHandler extends ContextWrapper {
                     .setContentText(message)
                     .setContentIntent(getPendingIntent(title, message))
                     .addAction(getNotificationAction(title, message))
+                    .setGroup(SUMARY_GROUP_NAME)
                     .setSmallIcon(android.R.drawable.stat_notify_chat)
                     .setAutoCancel(true);
         }
         return null;
     }
 
-    private Notification.Builder createNotificationWithoutChannel(String title, String message) {
+    private Notification.Builder createNotificationWithoutChannel(String title, String message, int priority) {
         return new Notification.Builder(getApplicationContext())
                 .setContentTitle(title)
                 .setContentText(message)
@@ -96,7 +103,8 @@ public class NotificationHandler extends ContextWrapper {
                 .setAutoCancel(true)
                 .setContentIntent(getPendingIntent(title, message))
                 .addAction(getNotificationAction(title, message))
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setGroup(SUMARY_GROUP_NAME)
+                .setPriority(priority)
                 .setDefaults(Notification.DEFAULT_ALL);
     }
 
@@ -117,5 +125,30 @@ public class NotificationHandler extends ContextWrapper {
             return action;
         }
         return null;
+    }
+
+    /**
+     * Agrupa las notificaciones sueltas que tengan el mismo grupo id
+     */
+    public void publishNotificationSumaryGroup(boolean isHighImportance) {
+
+        String channelId = (isHighImportance) ? CHANNEL_HIGH_ID : CHANNEL_LOW_ID;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            Notification sumaryNotification = new Notification.Builder(getApplicationContext(), channelId)
+                    .setSmallIcon(android.R.drawable.stat_notify_call_mute)
+                    .setGroup(SUMARY_GROUP_NAME)
+                    .setGroupSummary(true)
+                    .build();
+
+            getManager().notify(SUMARY_GROUP_ID, sumaryNotification);
+        } else {
+            Notification sumaryNotification = new NotificationCompat.Builder(getApplicationContext(), channelId)
+                    .setSmallIcon(android.R.drawable.stat_notify_more)
+                    .setGroup(SUMARY_GROUP_NAME)
+                    .setGroupSummary(true)
+                    .build();
+
+            getManager().notify(SUMARY_GROUP_ID, sumaryNotification);
+        }
     }
 }

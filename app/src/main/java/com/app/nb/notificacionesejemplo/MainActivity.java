@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         if (!TextUtils.isEmpty(title) && !TextUtils.isEmpty(message)) {
             Notification.Builder builder = notificationHandler.createNotification(title, message, isHighImportance);
             notificationHandler.getManager().notify(++counter, builder.build());
+            notificationHandler.publishNotificationSumaryGroup(isHighImportance);
         }
     }
 
